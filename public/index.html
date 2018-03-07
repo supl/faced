@@ -1,0 +1,65 @@
+<html>
+<header>
+    <meta name="viewport" content="width=device-width, user-scalable=yes, initial-scale=1, maximum-scale=1">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="/js/jquery.facedetection.min.js"></script>
+</header>
+
+<body>
+    <video id="camera" playsinline autoplay></video>
+    <canvas id="canvas" style="display:none"></canvas>
+</body>
+
+<script>
+    window.onload = () => {
+        let streaming = false;
+        let video = document.getElementById('camera');
+        let canvas = document.getElementById('canvas');
+
+        navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { facingMode: 'user' }
+        }).then(stream => {
+            video.srcObject = stream;
+        });
+
+        video.addEventListener('canplay', err => {
+            if (!streaming) {
+                streaming = true;
+            }
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+        }, false);
+
+        setInterval(() => {
+            $('.face').remove();
+            $('#camera').faceDetection({
+                inteval: 1,
+                complete: function (faces) {
+                    $('.face').remove();
+                    for (var i = 0; i < faces.length; i++) {
+                        $('<div>', {
+                            'class': 'face',
+                            'css': {
+                                'position': 'absolute',
+                                'left': faces[i].x + 'px',
+                                'top': faces[i].y + 'px',
+                                'width': faces[i].width + 'px',
+                                'height': faces[i].height + 'px',
+                                'border': '2px solid #FFF',
+                            }
+                        }).insertAfter(this);
+                    }
+
+                    if (faces.length === 1) {
+                        canvas.getContext('2d').drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+                        let photo = canvas.toDataURL('image/jpeg');
+                    }
+                },
+                error: function (code, message) {}
+            })
+        }, 1000);
+    }
+</script>
+
+</html>
