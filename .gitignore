@@ -57,3 +57,6 @@ typings/
 # dotenv environment variables file
 .env
 
+# certificate and private key
+*.key
+*.crt
